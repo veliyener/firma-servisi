@@ -1,14 +1,26 @@
-from rest_framework import serializers, generics
-from .models import Company
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import CompanySerializer
+from .services import CompanyService
 
 
-class CompanySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Company
-        fields = ['id', 'title', 'tax_number', 'status', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+class CompanyListCreateView(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.service = CompanyService()
 
+    def get(self, request):
+        companies = self.service.list_companies()
+        serializer = CompanySerializer(companies, many=True)
+        return Response(serializer.data)
 
-class CompanyListCreateView(generics.ListCreateAPIView):
-    queryset = Company.objects.all()
-    serializer_class = CompanySerializer
+    def post(self, request):
+        serializer = CompanySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        company = self.service.create_company(
+            title=serializer.validated_data['title'],
+            tax_number=serializer.validated_data['tax_number'],
+        )
+        result = CompanySerializer(company)
+        return Response(result.data, status=status.HTTP_201_CREATED)
