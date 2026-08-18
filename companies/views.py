@@ -10,6 +10,9 @@ class CompanyListCreateView(APIView):
         super().__init__(**kwargs)
         self.service = CompanyService()
 
+    def get_serializer(self, *args, **kwargs):
+        return CompanySerializer(*args, **kwargs)
+
     def get(self, request):
         companies = self.service.list_companies()
         serializer = CompanySerializer(companies, many=True)
