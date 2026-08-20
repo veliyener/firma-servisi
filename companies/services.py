@@ -27,3 +27,7 @@ class CompanyService:
         if self.repository.exists_by_tax_number(tax_number):
             raise DuplicateTaxNumberError(Messages.TAX_NUMBER_ALREADY_EXISTS)
         return self.repository.create(title, tax_number)
+
+    def update_status(self, company_id, status: str):
+        company = self.get_company(company_id)
+        return self.repository.update_status(company, status)

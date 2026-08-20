@@ -13,3 +13,8 @@ class CompanyRepository:
 
     def create(self, title: str, tax_number: str):
         return Company.objects.create(title=title, tax_number=tax_number)
+
+    def update_status(self, company, status: str):
+        company.status = status
+        company.save()
+        return company
