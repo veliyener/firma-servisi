@@ -14,8 +14,15 @@ class CompanyService:
     def __init__(self):
         self.repository = CompanyRepository()
 
-    def list_companies(self):
-        return self.repository.get_all()
+    def list_companies(self, page: int = 1, size: int = 20):
+        companies = self.repository.get_page(page, size)
+        total = self.repository.count_all()
+        return {
+            'total': total,
+            'page': page,
+            'size': size,
+            'results': companies,
+        }
 
     def get_company(self, company_id):
         company = self.repository.get_by_id(company_id)
