@@ -14,9 +14,16 @@ class CompanyListCreateView(APIView):
         return CompanySerializer(*args, **kwargs)
 
     def get(self, request):
-        companies = self.service.list_companies()
-        serializer = CompanySerializer(companies, many=True)
-        return Response(serializer.data)
+        page = int(request.query_params.get('page', 1))
+        size = int(request.query_params.get('size', 20))
+        data = self.service.list_companies(page=page, size=size)
+        serializer = CompanySerializer(data['results'], many=True)
+        return Response({
+            'total': data['total'],
+            'page': data['page'],
+            'size': data['size'],
+            'results': serializer.data,
+        })
 
     def post(self, request):
         serializer = CompanySerializer(data=request.data)
