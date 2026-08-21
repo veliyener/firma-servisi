@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status as http_status
-from .serializers import CompanySerializer, CompanyStatusUpdateSerializer
+from .serializers import CompanySerializer, CompanyStatusUpdateSerializer, CompanyListQuerySerializer
 from .services import CompanyService, DuplicateTaxNumberError, CompanyNotFoundError
 
 
@@ -14,8 +14,11 @@ class CompanyListCreateView(APIView):
         return CompanySerializer(*args, **kwargs)
 
     def get(self, request):
-        page = int(request.query_params.get('page', 1))
-        size = int(request.query_params.get('size', 20))
+        query_serializer = CompanyListQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        page = query_serializer.validated_data['page']
+        size = query_serializer.validated_data['size']
+
         data = self.service.list_companies(page=page, size=size)
         serializer = CompanySerializer(data['results'], many=True)
         return Response({

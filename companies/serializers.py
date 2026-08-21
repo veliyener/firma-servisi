@@ -19,3 +19,13 @@ class CompanyStatusUpdateSerializer(serializers.Serializer):
         if value not in ('active', 'passive'):
             raise serializers.ValidationError(Messages.INVALID_STATUS)
         return value
+
+
+class CompanyListQuerySerializer(serializers.Serializer):
+    page = serializers.IntegerField(required=False, default=1, min_value=1)
+    size = serializers.IntegerField(required=False, default=20, min_value=1)
+
+    def validate_size(self, value):
+        if value > 100:
+            raise serializers.ValidationError(Messages.SIZE_TOO_LARGE)
+        return value
