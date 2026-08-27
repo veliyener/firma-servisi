@@ -1,3 +1,4 @@
+import time
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status as http_status
@@ -51,6 +52,7 @@ class CompanyDetailView(APIView):
         return CompanySerializer(*args, **kwargs)
 
     def get(self, request, id):
+        time.sleep(10)  # GEÇİCİ - yavaş servis deneyi için, sonra silinecek
         try:
             company = self.service.get_company(id)
         except CompanyNotFoundError as e:
