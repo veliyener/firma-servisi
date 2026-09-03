@@ -11,10 +11,10 @@ class CompanyNotFoundError(Exception):
 
 
 class CompanyService:
-    def __init__(self):
+    def __init__(self) -> None:
         self.repository = CompanyRepository()
 
-    def list_companies(self, page: int = 1, size: int = 20):
+    def list_companies(self, page: int = 1, size: int = 20) -> dict:
         companies = self.repository.get_page(page, size)
         total = self.repository.count_all()
         return {
@@ -24,7 +24,7 @@ class CompanyService:
             'results': companies,
         }
 
-    def get_company(self, company_id):
+    def get_company(self, company_id: str):
         company = self.repository.get_by_id(company_id)
         if company is None:
             raise CompanyNotFoundError(Messages.COMPANY_NOT_FOUND)
@@ -35,6 +35,6 @@ class CompanyService:
             raise DuplicateTaxNumberError(Messages.TAX_NUMBER_ALREADY_EXISTS)
         return self.repository.create(title, tax_number)
 
-    def update_status(self, company_id, status: str):
+    def update_status(self, company_id: str, status: str):
         company = self.get_company(company_id)
         return self.repository.update_status(company, status)

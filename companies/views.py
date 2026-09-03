@@ -8,19 +8,18 @@ from .services import CompanyService, DuplicateTaxNumberError, CompanyNotFoundEr
 
 
 class CompanyListCreateView(APIView):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.service = CompanyService()
 
     def get_serializer(self, *args, **kwargs):
         return CompanySerializer(*args, **kwargs)
 
-    def get(self, request):
+    def get(self, request) -> Response:
         query_serializer = CompanyListQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
         page = query_serializer.validated_data['page']
         size = query_serializer.validated_data['size']
-
         data = self.service.list_companies(page=page, size=size)
         serializer = CompanySerializer(data['results'], many=True)
         return Response({
@@ -30,7 +29,7 @@ class CompanyListCreateView(APIView):
             'results': serializer.data,
         })
 
-    def post(self, request):
+    def post(self, request) -> Response:
         serializer = CompanySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -47,14 +46,14 @@ class CompanyListCreateView(APIView):
 
 
 class CompanyDetailView(APIView):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.service = CompanyService()
 
     def get_serializer(self, *args, **kwargs):
         return CompanySerializer(*args, **kwargs)
 
-    def get(self, request, id):
+    def get(self, request, id: str) -> Response:
         try:
             company = self.service.get_company(id)
         except CompanyNotFoundError as e:
@@ -62,7 +61,7 @@ class CompanyDetailView(APIView):
         serializer = CompanySerializer(company)
         return Response(serializer.data)
 
-    def patch(self, request, id):
+    def patch(self, request, id: str) -> Response:
         serializer = CompanyStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
