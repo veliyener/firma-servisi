@@ -8,36 +8,71 @@ sunar. Kendi veritabanına sahiptir ve başka hiçbir servise bağımlı değild
 
 ## Nasıl çalıştırılır
 
-### Gereken paketler
+### 1. Repoyu klonlayın
+
+```bash
+git clone https://github.com/veliyener/firma-servisi.git
+cd firma-servisi
+```
+
+### 2. Sanal ortam oluşturun ve aktif edin
+
+```bash
+python -m venv .venv
+.venv\Scripts\Activate.ps1          # Windows
+```
+
+### 3. Paketleri kurun
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### .env dosyası
+### 4. Neon üzerinden bir veritabanı oluşturun
 
-Proje kök dizininde bir `.env` dosyası oluşturun, şu değişkenleri içermeli:
+[neon.tech](https://neon.tech) üzerinden ücretsiz bir hesap açıp yeni bir proje oluşturun. Projenin
+**Connection Details** kısmından bağlantı bilgilerinizi alın.
 
+### 5. .env dosyasını oluşturun
+
+Proje kök dizininde `.env.example` dosyasını kopyalayıp `.env` adıyla kaydedin, içindeki değerleri
+4. adımda aldığınız gerçek Neon bilgileriyle doldurun:
+
+```bash
 DB_NAME=<neon-veritabani-adi>
 DB_USER=<neon-kullanici-adi>
 DB_PASSWORD=<neon-sifresi>
 DB_HOST=<neon-host-adresi>
 DB_PORT=5432
+```
 
-
-### Komutlar
+### 6. Veritabanı tablolarını oluşturun
 
 ```bash
-python -m venv .venv
-.venv\Scripts\Activate.ps1          # Windows
-pip install -r requirements.txt
 python manage.py migrate
+```
+
+Bu komut, `Company` modeline karşılık gelen tabloları Neon veritabanınızda oluşturur. Bir hata alırsanız,
+büyük ihtimalle `.env` dosyanızdaki bağlantı bilgilerinden biri (özellikle `DB_PORT`) yanlış girilmiştir.
+
+### 7. Sunucuyu başlatın
+
+```bash
 python manage.py runserver
 ```
+
+### 8. (İsteğe bağlı) Testleri çalıştırın
+
+```bash
+pytest
+```
+
+Testler gerçek Neon veritabanına değil, geçici bir SQLite veritabanına bağlanır.
 
 ### Port
 
 Bu servis varsayılan olarak **8000** portunda çalışır: `http://127.0.0.1:8000`
+
 
 ## Mimari
 
