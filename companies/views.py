@@ -1,24 +1,25 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status as http_status
+from rest_framework import status
 from .serializers import CompanySerializer, CompanyStatusUpdateSerializer, CompanyListQuerySerializer
+from .messages import Messages, ErrorCodes
+from .error_response import error_response
 from .services import CompanyService, DuplicateTaxNumberError, CompanyNotFoundError
 
 
 class CompanyListCreateView(APIView):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.service = CompanyService()
 
     def get_serializer(self, *args, **kwargs):
         return CompanySerializer(*args, **kwargs)
 
-    def get(self, request):
+    def get(self, request) -> Response:
         query_serializer = CompanyListQuerySerializer(data=request.query_params)
         query_serializer.is_valid(raise_exception=True)
         page = query_serializer.validated_data['page']
         size = query_serializer.validated_data['size']
-
         data = self.service.list_companies(page=page, size=size)
         serializer = CompanySerializer(data['results'], many=True)
         return Response({
@@ -28,7 +29,7 @@ class CompanyListCreateView(APIView):
             'results': serializer.data,
         })
 
-    def post(self, request):
+    def post(self, request) -> Response:
         serializer = CompanySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
@@ -37,33 +38,35 @@ class CompanyListCreateView(APIView):
                 tax_number=serializer.validated_data['tax_number'],
             )
         except DuplicateTaxNumberError as e:
-            return Response({'tax_number': [str(e)]}, status=http_status.HTTP_409_CONFLICT)
+            return error_response(
+                ErrorCodes.DUPLICATE_TAX_NUMBER, str(e), status.HTTP_409_CONFLICT, field="tax_number"
+            )
         result = CompanySerializer(company)
-        return Response(result.data, status=http_status.HTTP_201_CREATED)
+        return Response(result.data, status=status.HTTP_201_CREATED)
 
 
 class CompanyDetailView(APIView):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.service = CompanyService()
 
     def get_serializer(self, *args, **kwargs):
         return CompanySerializer(*args, **kwargs)
 
-    def get(self, request, id):
+    def get(self, request, id: str) -> Response:
         try:
             company = self.service.get_company(id)
         except CompanyNotFoundError as e:
-            return Response({'detail': str(e)}, status=http_status.HTTP_404_NOT_FOUND)
+            return error_response(ErrorCodes.COMPANY_NOT_FOUND, str(e), status.HTTP_404_NOT_FOUND)
         serializer = CompanySerializer(company)
         return Response(serializer.data)
 
-    def patch(self, request, id):
+    def patch(self, request, id: str) -> Response:
         serializer = CompanyStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             company = self.service.update_status(id, serializer.validated_data['status'])
         except CompanyNotFoundError as e:
-            return Response({'detail': str(e)}, status=http_status.HTTP_404_NOT_FOUND)
+            return error_response(ErrorCodes.COMPANY_NOT_FOUND, str(e), status.HTTP_404_NOT_FOUND)
         result = CompanySerializer(company)
         return Response(result.data)
